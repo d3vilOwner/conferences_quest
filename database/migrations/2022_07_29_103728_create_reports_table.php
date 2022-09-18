@@ -18,6 +18,7 @@ class CreateReportsTable extends Migration
             $table->string('topic');
             $table->time('report_start');
             $table->time('report_end');
+            $table->boolean('is_online');
             $table->string('description')->nullable();
             $table->string('presentation')->nullable();
             $table->timestamps();

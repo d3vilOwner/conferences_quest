@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exports\CommentsExport;
 use App\Exports\ReportsExport;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MeetingCreateRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -26,8 +27,46 @@ use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Polyfill\Intl\Idn\Resources\unidata\DisallowedRanges;
 
+use App\Traits\ZoomMeetingTrait;
+use Illuminate\Support\Facades\Cache;
+
+use function PHPUnit\Framework\isJson;
+
 class ReportController extends Controller
 {
+    use ZoomMeetingTrait;
+
+    const MEETING_TYPE_INSTANT = 1;
+    const MEETING_TYPE_SCHEDULE = 2;
+    const MEETING_TYPE_RECURRING = 3;
+    const MEETING_TYPE_FIXED_RECURRING_FIXED = 8;
+    
+    public function createMeeting(MeetingCreateRequest $request)
+    {
+        // $data = $request->validated();
+        // dump($data['start_time']);
+        $this->create($request->validated());
+    }
+
+    public function getAllMeetings() {
+        if(Cache::has('meetings')) {
+            $meetings = Cache::get('meetings');
+            return $meetings;
+        } else {
+            return $this->_getAllMeetings();
+        }
+    }
+
+    public function getMeeting($user_id, $report_id) {
+        return $this->_getMeeting($user_id, $report_id);
+    }
+
+    public function isJoin($user_id, $conference_id) {
+        $joining = UserConference::where('user_id', $user_id)->where('conference_id', $conference_id)->get();
+        // dump($joining);
+        return $joining;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -43,10 +82,10 @@ class ReportController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //
-    }
+    // public function create()
+    // {
+    //     dump(1);
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -56,8 +95,8 @@ class ReportController extends Controller
      */
     public function store(ReportStoreRequest $request)
     {   
-        $input = $request->all();
 
+        $input = $request->all();
         if($request->hasFile('presentation')) {
             $file = $request->file('presentation');
             $file_name = time(). '.' .$file->getClientOriginalName();
@@ -68,7 +107,7 @@ class ReportController extends Controller
         
         
         $report = Report::create($input);
-            
+
         // ----- mail 
         dispatch(new NewReportJob($request->conference_title, $request->username, $request->topic, $request->report_start, $request->report_end, $request->conference_id)); 
 

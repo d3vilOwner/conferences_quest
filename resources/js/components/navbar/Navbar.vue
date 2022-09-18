@@ -9,6 +9,7 @@
             <v-toolbar-title>CONFERENCES</v-toolbar-title>
             <v-spacer/>
             <v-btn class="ml-3"><router-link class="nav-link" :to="{name: 'conferencesList'}">Conferences list</router-link></v-btn>
+            <v-btn v-if="role === 'admin'" class="ml-3"><router-link class="nav-link" :to="{name: 'meetingsList'}">Meetings list</router-link></v-btn>
             <v-btn v-if="token" class="ml-3"><router-link class="nav-link" :to="{name: 'reports'}">Reports</router-link></v-btn>
             <v-btn v-if="!token" class="ml-3"><router-link class="nav-link" :to="{name: 'login'}">LOGIN</router-link></v-btn>
             <v-btn v-if="!token" class="ml-3"><router-link class="nav-link" :to="{name: 'register'}">REGISTER</router-link></v-btn>
@@ -154,10 +155,20 @@ export default {
     computed: {
         ...mapGetters(['getCurrentUserRole', 'getFavorites', 'getCurrentUserID', 'getAllConferences', 'getReports']),
         searchedConferences() {
-            return this.conferences.filter(conference => conference.title.toLowerCase().includes(this.searchQuery.toLowerCase()))
+            const nowDate = new Date()
+            let conferenceDate
+            return this.conferences.filter((conference) => {
+                conferenceDate = new Date(conference.conference_date)
+                return conference.title.toLowerCase().includes(this.searchQuery.toLowerCase()) && nowDate.getTime() <= conferenceDate.getTime()
+            })
         },
         searchedReports() {
-            return this.getReports.filter(report => report.topic.toLowerCase().includes(this.searchQuery.toLowerCase()))
+            const nowDate = new Date()
+            let reportEndDate
+            return this.getReports.filter((report) => {
+                reportEndDate = new Date(`${report.conference_id.conference_date}T${report.report_end}`)
+                return report.topic.toLowerCase().includes(this.searchQuery.toLowerCase()) && nowDate.getTime() < reportEndDate.getTime()
+            })
         }
     },
     mounted() {

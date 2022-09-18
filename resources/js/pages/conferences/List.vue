@@ -53,22 +53,26 @@ export default {
     computed:  {
         ...mapGetters(['getAllConferences', 'getCurrentUserID', 'getJoinedConferences']),
         filteredConferences() {
+            const nowDate = new Date()
+            let conferenceDate
+        //    console.log(nowDate.getTime())
        //     return this.getAllConferences.filter(conference => conference.title === this.dima)
             return this.getAllConferences.filter((conference) => {
+                conferenceDate = new Date(conference.conference_date)
                 if(this.filter.conferencesQuantity === -1 && this.filter.startDate === null && this.filter.endDate === null && this.filter.categories.length === 0) {
                     return conference
                 } else {
 
                     if(this.filter.conferencesQuantity === -1 && this.filter.startDate !== null && this.filter.endDate === null && this.filter.categories.length === 0) { // only start date
-                        return conference.conference_date > this.filter.startDate
+                        return conference.conference_date > this.filter.startDate && nowDate.getTime() <= conferenceDate.getTime()
                     } else if(this.filter.conferencesQuantity === -1 && this.filter.startDate === null && this.filter.endDate !== null && this.filter.categories.length === 0) { // only end date
-                        return conference.conference_date < this.filter.endDate
+                        return conference.conference_date < this.filter.endDate && nowDate.getTime() <= conferenceDate.getTime()
                     } else if(this.filter.conferencesQuantity === -1 && this.filter.startDate !== null && this.filter.endDate !== null && this.filter.categories.length === 0) { // only start && end date
-                        return conference.conference_date < this.filter.endDate && conference.conference_date > this.filter.startDate
+                        return conference.conference_date < this.filter.endDate && conference.conference_date > this.filter.startDate && nowDate.getTime() <= conferenceDate.getTime()
                     } else if(this.filter.conferencesQuantity === -1 && this.filter.startDate === null && this.filter.endDate === null && this.filter.categories.length !== 0) { // only categories filter
                         if(conference.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if(conference.category_id.name === this.filter.categories[i]) {
+                                if(conference.category_id.name === this.filter.categories[i] && nowDate.getTime() <= conferenceDate.getTime()) {
                                     return conference
                                 }
                             }
@@ -76,7 +80,7 @@ export default {
                     } else if(this.filter.conferencesQuantity === -1 && this.filter.startDate !== null && this.filter.endDate === null && this.filter.categories.length !== 0) { // only categories && start date
                         if(conference.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if((conference.category_id.name === this.filter.categories[i]) && conference.conference_date > this.filter.startDate) {
+                                if((conference.category_id.name === this.filter.categories[i]) && conference.conference_date > this.filter.startDate && nowDate.getTime() <= conferenceDate.getTime()) {
                                     return conference
                                 }
                             }
@@ -84,7 +88,7 @@ export default {
                     } else if(this.filter.conferencesQuantity === -1 && this.filter.startDate === null && this.filter.endDate !== null && this.filter.categories.length !== 0) { // only categories && end date
                         if(conference.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if((conference.category_id.name === this.filter.categories[i]) && conference.conference_date < this.filter.endDate) {
+                                if((conference.category_id.name === this.filter.categories[i]) && conference.conference_date < this.filter.endDate && nowDate.getTime() <= conferenceDate.getTime()) {
                                     return conference
                                 }
                             }
@@ -92,31 +96,31 @@ export default {
                     } else if(this.filter.conferencesQuantity === -1 && this.filter.startDate !== null && this.filter.endDate !== null && this.filter.categories.length !== 0) { // only categories && end && start date
                         if(conference.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if((conference.category_id.name === this.filter.categories[i]) && (conference.conference_date < this.filter.endDate) && (conference.conference_date > this.filter.startDate)) {
+                                if((conference.category_id.name === this.filter.categories[i]) && (conference.conference_date < this.filter.endDate) && (conference.conference_date > this.filter.startDate) && (nowDate.getTime() <= conferenceDate.getTime())) {
                                     return conference
                                 }
                             }
                         }
                     } else if(this.filter.conferencesQuantity !== -1 && this.filter.startDate === null && this.filter.endDate === null && this.filter.categories.length === 0) { // only quantity
-                        return conference.reports.length === this.filter.conferencesQuantity
+                        return conference.reports.length === this.filter.conferencesQuantity && nowDate.getTime() <= conferenceDate.getTime()
                     } else if(this.filter.conferencesQuantity !== -1 && this.filter.startDate !== null && this.filter.endDate === null && this.filter.categories.length === 0) { // only quantity && start date
-                        return conference.reports.length === this.filter.conferencesQuantity && conference.conference_date > this.filter.startDate
+                        return conference.reports.length === this.filter.conferencesQuantity && conference.conference_date > this.filter.startDate && nowDate.getTime() <= conferenceDate.getTime()
                     } else if(this.filter.conferencesQuantity !== -1 && this.filter.startDate === null && this.filter.endDate !== null && this.filter.categories.length === 0) { // only quantity && end date
-                        return conference.reports.length === this.filter.conferencesQuantity && conference.conference_date < this.filter.endDate
+                        return conference.reports.length === this.filter.conferencesQuantity && conference.conference_date < this.filter.endDate && nowDate.getTime() <= conferenceDate.getTime()
                     } else if(this.filter.conferencesQuantity !== -1 && this.filter.startDate === null && this.filter.endDate === null && this.filter.categories.length !== 0) { // only quantity && categories 
                         if(conference.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if(conference.category_id.name === this.filter.categories[i] && conference.reports.length === this.filter.conferencesQuantity) {
+                                if(conference.category_id.name === this.filter.categories[i] && conference.reports.length === this.filter.conferencesQuantity && nowDate.getTime() <= conferenceDate.getTime()) {
                                     return conference 
                                 }
                             }
                         }
                     } else if(this.filter.conferencesQuantity !== -1 && this.filter.startDate !== null && this.filter.endDate !== null && this.filter.categories.length === 0) { // only quantity && start && end 
-                        return conference.reports.length === this.filter.conferencesQuantity && conference.conference_date > this.filter.startDate && conference.conference_date < this.filter.endDate
+                        return conference.reports.length === this.filter.conferencesQuantity && conference.conference_date > this.filter.startDate && conference.conference_date < this.filter.endDate && nowDate.getTime() <= conferenceDate.getTime()
                     } else if(this.filter.conferencesQuantity !== -1 && this.filter.startDate !== null && this.filter.endDate === null && this.filter.categories.length !== 0) { // only quantity && start && categories 
                         if(conference.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if(conference.category_id.name === this.filter.categories[i] && conference.reports.length === this.filter.conferencesQuantity && conference.conference_date > this.filter.startDate) {
+                                if(conference.category_id.name === this.filter.categories[i] && conference.reports.length === this.filter.conferencesQuantity && conference.conference_date > this.filter.startDate && nowDate.getTime() <= conferenceDate.getTime()) {
                                     return conference 
                                 }
                             }
@@ -124,7 +128,7 @@ export default {
                     } else if(this.filter.conferencesQuantity !== -1 && this.filter.startDate === null && this.filter.endDate !== null && this.filter.categories.length !== 0) { // only quantity && end && categories 
                         if(conference.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if(conference.category_id.name === this.filter.categories[i] && conference.reports.length === this.filter.conferencesQuantity && conference.conference_date < this.filter.endDate) {
+                                if(conference.category_id.name === this.filter.categories[i] && conference.reports.length === this.filter.conferencesQuantity && conference.conference_date < this.filter.endDate && nowDate.getTime() <= conferenceDate.getTime()) {
                                     return conference 
                                 }
                             }
@@ -132,7 +136,7 @@ export default {
                     } else if(this.filter.conferencesQuantity !== -1 && this.filter.startDate !== null && this.filter.endDate !== null && this.filter.categories.length !== 0) { // only quantity && end && categories && start 
                         if(conference.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if(conference.category_id.name === this.filter.categories[i] && conference.reports.length === this.filter.conferencesQuantity && conference.conference_date < this.filter.endDate && conference.conference_date > this.filter.startDate) {
+                                if(conference.category_id.name === this.filter.categories[i] && conference.reports.length === this.filter.conferencesQuantity && conference.conference_date < this.filter.endDate && conference.conference_date > this.filter.startDate && nowDate.getTime() <= conferenceDate.getTime()) {
                                     return conference 
                                 }
                             }
@@ -148,6 +152,7 @@ export default {
         this.conferences = this.getAllConferences
         this.isJoin({user_id: this.user_id, conferences: this.conferences})
         console.log(this.getJoinedConferences)
+        console.log(this.getAllConferences)
     },
     updated() {
         //this.isJoin({user_id: this.user_id, conferences: this.conferences})

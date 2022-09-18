@@ -6,7 +6,26 @@
                     <v-flex xs12 sm8>
                         <v-card class="mb-1">
                             <v-toolbar dark color="grey darken-4">
-                                <v-toolbar-title class="text-h5 mx-auto">{{ report.topic }}</v-toolbar-title>
+                                <v-row>
+                                    <v-col cols="6">
+                                        <v-toolbar-title class="text-h5 mx-auto">{{ report.topic }}</v-toolbar-title>
+                                    </v-col>
+                                    <v-col cols="6" align="center">
+                                        <v-toolbar-title class="text-h5 mx-auto" v-if="timer.timerIsOff === false" align="right">
+                                            {{timer.days}} : {{timer.hours}} : {{timer.minutes}} : {{timer.seconds}}
+                                        </v-toolbar-title>
+                                        <v-toolbar-title v-if="timer.timerIsOff === true && role !== 'admin' && report.user_id.id !== user_id && isJoin === 1" align="right">
+                                            <a v-bind:href="join_url">
+                                                <v-btn color="primary">Join to meeting</v-btn>
+                                            </a>
+                                        </v-toolbar-title>
+                                        <v-toolbar-title v-if="timer.timerIsOff === true && role === 'Announcer' && report.user_id.id === user_id" align="right">
+                                            <a v-bind:href="start_url">
+                                                <v-btn color="primary">Start meeting</v-btn>
+                                            </a>
+                                        </v-toolbar-title>
+                                    </v-col>
+                                </v-row>
                             </v-toolbar>
                             <v-card-text>
                                 <p class="text-h6">
@@ -37,6 +56,7 @@
                                 <a v-if="role === 'admin'" v-bind:href="'/api/export/comments/'+report.id" type="button" download="comments.csv">
                                     <v-btn class="ml-3" color="primary" @click="exportComments">Export</v-btn>
                                 </a>
+                                <!-- <v-btn @click="getMeetings">getMeetings</v-btn> -->
                             </v-card-actions>
                         </v-card>
                         <div>
@@ -84,6 +104,19 @@ export default {
         return {
             comments: [],
             comment: 'Great!',
+
+            timer: {
+                days: 0,
+                hours: 0,
+                minutes: 0,
+                seconds: 0,
+                timerIsOff: false
+            },
+            start_url: null,
+            join_url: null,
+
+            is_join: false,
+
         }
     },
     components: {
@@ -101,12 +134,80 @@ export default {
         },
         user_id: {
             type: Number,
-            required: true
+            required: 1
         },
     },
-    computed: mapGetters(['getComments', 'getPath', 'getUser']),
+    computed: { 
+        ...mapGetters(['getComments', 'getPath', 'getUser']),
+
+        _seconds: () => 1000,
+        _minutes() {
+            return this._seconds * 60
+        },
+        _hours() {
+            return this._minutes * 60
+        },
+        _days() {
+            return this._hours * 24
+        }
+    },
     methods: {
         ...mapActions(['deleteReportAndJoining', 'fetchComments', 'storeComment', 'moveImgToStorage']),
+
+        // getMeetings() {
+        //     // axios.get('/api/meeting/get-all-meetings').then(response => {
+        //     //     console.log(response)
+        //     // })
+        //     console.log(this.report)
+        // },
+        
+        isJoin() {
+            axios.get(`/api/meeting/is-join/${this.user_id}/${this.report.conference_id.id}`).then(response => {
+                console.log(response)
+                if(response.data.length === 0) {
+                    this.isJoin = 0
+                } else {
+                    this.isJoin = 1
+                }
+            })
+        },
+
+        getMeeting() {
+            axios.get(`/api/meeting/get-meeting/${this.report.user_id.id}/${this.report.id}`).then(response => {
+            //    console.log(response)
+                this.start_url = response.data.data.start_url,
+                this.join_url = response.data.data.join_url
+            })
+        },
+
+        showRemaining() {
+            const timer = setInterval(() => {
+                const now = new Date()
+                const end = new Date(`${this.report.conference_id.conference_date}T${this.report.report_end}`)
+                let distance = end.getTime() - now.getTime()
+                if(this.role === 'Listener' || this.role === 'admin') {
+                    distance = end.getTime() - now.getTime()
+                } else if(this.role === 'Announcer') {
+                    distance = (end.getTime() - 600000) - now.getTime()
+                }
+
+                if(distance < 0) {
+                    clearInterval(timer)
+                    this.timer.timerIsOff = true
+                    return
+                }
+
+                const days = Math.floor(distance / this._days)
+                const hours = Math.floor((distance % this._days) / this._hours)
+                const minutes = Math.floor((distance % this._hours) / this._minutes)
+                const seconds = Math.floor((distance % this._minutes) / this._seconds)
+                this.timer.minutes = minutes < 10 ? "0" + minutes : minutes
+                this.timer.seconds = seconds < 10 ? "0" + seconds : seconds
+                this.timer.hours = hours < 10 ? "0" + hours : hours
+                this.timer.days = days < 10 ? "0" + days : days
+
+            }, 1000)
+        },
         exportComments() {
             axios.get('/api/export/comments/'+this.report.id)
         },
@@ -149,6 +250,7 @@ export default {
         },
     },
     mounted() {
+        this.showRemaining()
         store.dispatch('fetchComments', this.report.id).then((response) => {
             this.comments = response.data
             console.log(response.data)
@@ -164,6 +266,12 @@ export default {
 
         const observer = new IntersectionObserver(callback, options)
         observer.observe(this.$refs.observer)
+
+        if(this.report.is_online === 1) {
+            this.getMeeting()
+        }
+
+        this.isJoin()
     }
 }
 </script>

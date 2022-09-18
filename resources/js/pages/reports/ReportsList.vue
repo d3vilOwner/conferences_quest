@@ -38,7 +38,7 @@ export default {
     methods: {
         fetchReports() {
             axios.get('api/report/index').then(response => {
-           //     console.log(response.data.data)
+            //    console.log(response.data.data)
                 this.reports = response.data.data
             })
         },
@@ -54,19 +54,24 @@ export default {
     },
     computed: {
         filteredReports() {
+            const nowDate = new Date()
+            let reportEndDate
+
             return this.reports.filter((report) => {
+                reportEndDate = new Date(`${report.conference_id.conference_date}T${report.report_end}`)
+
                 if(this.filter.startTime === null && this.filter.endTime === null && this.filter.categories.length === 0) {
                     return report
                 } else {
 
                     if(this.filter.startTime !== null && this.filter.endTime === null && this.filter.categories.length === 0) { // only start time
-                        return report.report_start > this.filter.startTime
+                        return report.report_start > this.filter.startTime && nowDate.getTime() < reportEndDate.getTime()
                     } else if(this.filter.startTime === null && this.filter.endTime !== null && this.filter.categories.length === 0) { // only end time
-                        return report.report_end < this.filter.endTime
+                        return report.report_end < this.filter.endTime && nowDate.getTime() < reportEndDate.getTime()
                     } else if(this.filter.startTime === null && this.filter.endTime === null && this.filter.categories.length !== 0) { // only categories
                         if(report.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if(report.category_id.name === this.filter.categories[i]) {
+                                if(report.category_id.name === this.filter.categories[i] && nowDate.getTime() < reportEndDate.getTime()) {
                                     return report
                                 }
                             }
@@ -74,7 +79,7 @@ export default {
                     } else if(this.filter.startTime !== null && this.filter.endTime === null && this.filter.categories.length !== 0) { // only categories && start time
                         if(report.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if(report.category_id.name === this.filter.categories[i] && report.report_start > this.filter.startTime) {
+                                if(report.category_id.name === this.filter.categories[i] && report.report_start > this.filter.startTime && nowDate.getTime() < reportEndDate.getTime()) {
                                     return report 
                                 }
                             }
@@ -82,17 +87,17 @@ export default {
                     } else if(this.filter.startTime === null && this.filter.endTime !== null && this.filter.categories.length !== 0) { // only categories && end time
                         if(report.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if(report.category_id.name === this.filter.categories[i] && report.report_end < this.filter.endTime) {
+                                if(report.category_id.name === this.filter.categories[i] && report.report_end < this.filter.endTime && nowDate.getTime() < reportEndDate.getTime()) {
                                     return report 
                                 }
                             }
                         }
                     } else if(this.filter.startTime !== null && this.filter.endTime !== null && this.filter.categories.length === 0) { // only start && end time
-                        return report.report_start > this.filter.startTime && report.report_end < this.filter.endTime
+                        return report.report_start > this.filter.startTime && report.report_end < this.filter.endTime && nowDate.getTime() < reportEndDate.getTime()
                     } else if(this.filter.startTime !== null && this.filter.endTime !== null && this.filter.categories.length !== 0) { // only categories && end time
                         if(report.category_id !== null) {
                             for(var i = 0; i < this.filter.categories.length; i++) {
-                                if(report.category_id.name === this.filter.categories[i] && report.report_end < this.filter.endTime && report.report_start > this.filter.startTime) { // start && end && categories
+                                if(report.category_id.name === this.filter.categories[i] && report.report_end < this.filter.endTime && report.report_start > this.filter.startTime && nowDate.getTime() < reportEndDate.getTime()) { // start && end && categories
                                     return report 
                                 }
                             }

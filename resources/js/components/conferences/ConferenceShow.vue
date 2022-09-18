@@ -38,6 +38,8 @@
 
                                 :user_id="this.user_id"
                                 :role="this.role"
+
+                                :conference_date="this.conference.conference_date"
                             >
                             </DialogReportForm>
                         </v-dialog>
@@ -153,6 +155,7 @@ export default {
             this.user_id = this.getCurrentUserID
         },
         joinToConference() {
+            //-----------
             if(this.role === 'Announcer') {
                 this.dialog = true
             }
@@ -163,6 +166,7 @@ export default {
                 username: this.getUser.firstname
             }) 
             this.isJoinConf = true  
+            //------------
         },
         cancelJoinToConference() {
       //      axios.delete('api/conference/join/'+this.joinedId).then(response => {

@@ -1,36 +1,43 @@
 <template>
     <v-col>
-        <v-card> 
-            <v-card-text>
-                <v-row align="center" justify="center">
-                    <v-col>
-                        <v-row class="mb-1 pl-3 pr-3 pt-3">
+            <v-card> 
+                <v-card-text>
+                    <v-row align="center" justify="center">
+                        <v-col cols="12">
+                            <v-row class="mb-1 pl-3 pr-3 pt-3">
+                                <div>
+                                    Start: {{this.report.conference_id.conference_date}} {{this.report.report_start}} | End: {{this.report.conference_id.conference_date}} {{this.report.report_end}} 
+                                </div>
+                                <v-spacer></v-spacer>
+
+                                <v-icon v-if="isFavoriteFlag === false && this.getCurrentUserToken !== null && this.getCurrentUserRole !== 'admin'" @click="this.addToFavorite" class="favorite" color="">mdi-cards-heart</v-icon>
+                                <v-icon v-if="isFavoriteFlag === true && this.getCurrentUserToken !== null && this.getCurrentUserRole !== 'admin'" @click="this.removeFromFavorite" class="favorite" color="red">mdi-cards-heart</v-icon>
+                                <v-badge>
+                                    <template v-slot:badge>
+                                        <span v-if="meetingStatus === 'ended'">Ended</span>
+                                        <span v-if="meetingStatus === 'waiting'">Waiting</span>
+                                        <span v-if="meetingStatus === 'started'">Started</span>
+                                    </template>
+                                </v-badge>
+                            </v-row>
                             <div>
-                                Start: {{this.report.conference_id.conference_date}} {{this.report.report_start}} | End: {{this.report.conference_id.conference_date}} {{this.report.report_end}} 
+                                <v-icon small>mdi-message-text</v-icon>
+                                2
                             </div>
-                            <v-spacer></v-spacer>
 
-                            <v-icon v-if="isFavoriteFlag === false && this.getCurrentUserToken !== null && this.getCurrentUserRole !== 'admin'" @click="this.addToFavorite" class="favorite" color="">mdi-cards-heart</v-icon>
-                            <v-icon v-if="isFavoriteFlag === true && this.getCurrentUserToken !== null && this.getCurrentUserRole !== 'admin'" @click="this.removeFromFavorite" class="favorite" color="red">mdi-cards-heart</v-icon>
-                        </v-row>
-                        <div>
-                            <v-icon small>mdi-message-text</v-icon>
-                            2
-                        </div>
-
-                        <p class="text-h5 text--primary mb-0">
-                            <router-link class="nav-link" :to="{name: 'reportDetails', params: {reportId: this.report.id}}">{{this.report.topic}}</router-link>
-                        </p>
-                        <p class="text-h7 text--primary mb-0">
-                            {{this.report.description}}
-                        </p>    
-                    </v-col>
-                    <v-col class="text-right">
-                        <v-btn @click="deleteCurrentReport"  dark v-if="this.getCurrentUserRole === 'admin'">Delete</v-btn>
-                    </v-col>
-                </v-row>
-            </v-card-text>
-        </v-card>
+                            <p class="text-h5 text--primary mb-0">
+                                <router-link class="nav-link" :to="{name: 'reportDetails', params: {reportId: this.report.id}}">{{this.report.topic}}</router-link>
+                            </p>
+                            <p class="text-h7 text--primary mb-0">
+                                {{this.report.description}}
+                            </p>    
+                        </v-col>
+                        <v-col class="text-right">
+                            <v-btn @click="deleteCurrentReport"  dark v-if="this.getCurrentUserRole === 'admin'">Delete</v-btn>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+            </v-card>
     </v-col>
 </template>
 
@@ -53,9 +60,30 @@ export default {
         return {
             isFavoriteFlag: false,
             favorite_id: null,
+
+            statusOfMeeting: '',
         }
     },
-    computed: mapGetters(['getCurrentUserID', 'getCurrentUserToken', 'getCurrentUserRole']),
+    computed: { 
+        ...mapGetters(['getCurrentUserID', 'getCurrentUserToken', 'getCurrentUserRole']),
+        meetingStatus() {
+            const nowDate = new Date()
+            const reportEndDate = new Date(`${this.report.conference_id.conference_date}T${this.report.report_end}`)
+            const reportStartDate = new Date(`${this.report.conference_id.conference_date}T${this.report.report_start}`)
+            if(nowDate.getTime() >= reportEndDate.getTime()) {
+                // this.statusOfMeeting = 'ended'
+                return 'ended'
+            } else if(nowDate.getTime() < reportStartDate.getTime()) {
+                console.log(nowDate.getTime())
+                console.log(reportEndDate.getTime())
+                return 'waiting'
+                // this.statusOfMeeting = 'waiting'
+            } else {
+                return 'started'
+                // this.statusOfMeeting = 'started'
+            }
+        }
+    },
     methods: {
         ...mapActions(['deleteReport']),
         addToFavorite() {
@@ -88,7 +116,8 @@ export default {
                 conference_title: this.report.conference_id.title,
                 report_id: this.report.id
             })
-        }
+        },
+        
     }
 }
 </script>

@@ -35,6 +35,11 @@ class User extends Authenticatable
         return $this->belongsTo(Country::class, 'country_id', 'id');
     }
 
+    public function meetings()
+    {
+        return $this->hasMany(Meeting::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

@@ -10,6 +10,7 @@ import commentsModule from './modules/commentsModule.js'
 import categoriesModule from './modules/categoriesModule.js'
 import subcategoriesModule from './modules/subcategoriesModule.js'
 import favoritesModule from './modules/favoritesModule.js'
+import meetingsModule from './modules/meetingsModule.js'
 
 Vue.use(Vuex)
 
@@ -22,7 +23,8 @@ const store = new Vuex.Store({
         commentsModule,
         categoriesModule,
         subcategoriesModule,
-        favoritesModule
+        favoritesModule,
+        meetingsModule
     },
     plugins: [createPersistedState()],
 })

@@ -61,6 +61,19 @@
                             >
                             </v-file-input>
                         </v-col>
+                        <v-row align="center" fustify="center">
+                            <v-col cols="6">
+                                <v-radio-group v-model="form.is_online">
+                                    <v-radio
+                                        :label="'Online'"
+                                        :value="true"
+                                    ></v-radio>
+                                </v-radio-group>
+                            </v-col>
+                            <v-col cols="6" align="center" fustify="center" v-if="form.is_online === true">
+                                <p>10 minutes before start you will recieve start-meeting link on report details page</p>
+                            </v-col>
+                        </v-row>
                     </v-row>
                 </v-container>
             </v-form>
@@ -101,6 +114,10 @@ export default {
         conference_title: {
             type: String,
             required: true
+        },
+        conference_date: {
+            type:String,
+            required:true
         }
     },
     data() {
@@ -117,7 +134,9 @@ export default {
                 user_id: this.user_id,
                 
                 username: this.username,
-                conference_title: this.conference_title
+                conference_title: this.conference_title,
+
+                is_online: false
             },
             validation: {
                 validTime: null,
@@ -187,15 +206,27 @@ export default {
             }
         }
     },
-    computed: mapGetters(['getCurrentUserID']),
+    computed: {
+        ...mapGetters(['getCurrentUserID']),
+    },
     methods: {
         onChange(e) {
             this.form.presentation = e
         },
         save() {
+
             if(this.$refs.form.validate()) {
                
+                
+
                 var fd = new FormData();
+
+                if(this.form.is_online === true) {
+                    this.form.is_online = 1
+                } else {
+                    this.form.is_online = 0
+                }
+
                 for (var key in this.form) {
                     //    console.log(key)
                     //    console.log(this.form[key])
@@ -205,11 +236,46 @@ export default {
                 for (var pair of fd.entries()) {
                     console.log(pair[0] + ' - ' + pair[1]);
                 }
+
+                if(this.form.is_online === 1) {
+                    this.form.is_online = true
+                } else {
+                    this.form.is_online = false
+                }
+
                 axios.post('/api/report/store', fd, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
+                }).then(response => {
+                    if(this.form.is_online === true) {
+                        let firstDate = this.form.report_start;
+                        let secondDate = this.form.report_end;
+                                    
+                        let getDate = (string) => new Date(0, 0,0, string.split(':')[0], string.split(':')[1]); //получение даты из строки (подставляются часы и минуты
+                        let different = (getDate(secondDate) - getDate(firstDate));
+
+                        let hours = Math.floor((different % 86400000) / 3600000);
+                        let minutes = Math.round(((different % 86400000) % 3600000) / 60000);
+
+                        let result = (hours * 60) + minutes 
+
+                        axios.post('/api/meeting/store', {
+                            topic: this.form.topic,
+                            start_time: `${this.conference_date}T${this.form.report_start}:00Z`,
+                            duration: result,
+                            agenda: `Meeting on ${this.form.topic} report`,
+                            host_video: 1,
+                            participant_video: 1,
+                            report_id: response.data.data.id,
+                            user_id: this.user_id 
+                        }).then(response => {
+                            console.log(response)
+                        })
+                    }
                 })
+
+                
 
                 this.$emit('closeModal', {})
             }

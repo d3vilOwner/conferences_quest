@@ -24,7 +24,7 @@ class CreateAdminSeeder extends Seeder
             'birthdate' => '2001-01-28',
             'country_id' => '2',
             'phone' => '0990846456',
-            'email' => 'admin@groupbwt.com',
+            'email' => 'admin@example.com',
             'password' => Hash::make('12345678'),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),

@@ -91,6 +91,13 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
         Route::get('/comments/{reportID}', [ReportController::class, 'exportComments']);
     });
 
+    Route::prefix('/meeting')->group(function() {
+        Route::post('/store', [ReportController::class, 'createMeeting']);
+        Route::get('/get-all-meetings', [ReportController::class, 'getAllMeetings']);
+        Route::get('/get-meeting/{user_id}/{report_id}', [ReportController::class, 'getMeeting']);
+        Route::get('/is-join/{user_id}/{conference_id}', [ReportController::class, 'isJoin']);
+    });
+
 });
 
 Route::get('/joins', [ConferenceController::class, 'getAllJoins']);

@@ -20,6 +20,7 @@ import CreateSubcategory from '../pages/categories/CreateSubcategory.vue'
 import Profile from '../pages/user/Profile.vue'
 import ProfileEdit from '../pages/user/ProfileEdit.vue'
 import UpdateSubcategory from '../pages/categories/UpdateSubcategory.vue'
+import MeetingsList from '../pages/meetings/MeetingsList.vue'
 
 import store from '../store'
 //import store from '@/store/index.js'
@@ -134,6 +135,11 @@ const router = new VueRouter({
             component: UpdateSubcategory,
             props: true
         },
+        {
+            path: '/meetings-list',
+            name: 'meetingsList',
+            component: MeetingsList
+        }
     ]
 });
 

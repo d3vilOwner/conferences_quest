@@ -24,6 +24,7 @@ class ReportResource extends JsonResource
             'report_end' => $this->report_end,
             'description' => $this->description,
             'presentation' => $this->presentation,
+            'is_online' => $this->is_online,
             'conference_id' => new ConferenceResource($this->conference),
             'user_id' => new UserResource($this->user),
             'category_id' => new CategoryResource($this->category)

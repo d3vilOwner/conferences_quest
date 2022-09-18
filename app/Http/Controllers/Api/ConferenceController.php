@@ -20,6 +20,7 @@ use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
@@ -33,6 +34,7 @@ class ConferenceController extends Controller
      */
     public function index()
     {
+        // dump(Cache::get('user'));
         return ConferenceResource::collection(Conference::with('reports', 'country', 'user')->get());
   //      return (Conference::with('reports', 'country', 'user')->get());
     }

@@ -26,6 +26,7 @@ class Report extends Model
         'user_id',
         'category_id',
         'subcategory_id',
+        'is_online',
     ];
 
     public function conference() 
@@ -50,6 +51,10 @@ class Report extends Model
     public function subcategory() 
     {
         return $this->belongsTo(Subcategory::class, 'subcategory_id', 'id');
+    }
+
+    public function meetings() {
+        return $this->hasMany(Meeting::class);
     }
 
 

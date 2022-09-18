@@ -33,6 +33,7 @@ class ReportStoreRequest extends FormRequest
             'user_id' => 'required',
             'conference_title' => 'required|string',
             'username' => 'required|string',
+            'is_online' => 'required'
         ];
     }
 }
